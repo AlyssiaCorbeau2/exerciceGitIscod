@@ -1,0 +1,36 @@
+#!/bin/sh
+#
+# An example hook script to verify what is about to be committed.
+# Called by "git commit" with no arguments.  The hook should
+# exit with non-zero status after issuing an appropriate message if
+# it wants to stop the commit.
+#
+# To enable this hook, rename this file to "pre-commit".
+
+read -p "Avez-vous vérifié ce commit avant de l'envoyer (y/n) ? " response < /dev/tty
+
+case $response in
+	[Yy]* )
+		commitdirectory=suivi
+		commitfile=$commitdirectory\\commitInfo.txt
+		if ! [ -e "$commitdirectory" ]; then
+			mkdir "$commitdirectory"
+		fi
+		if ! [ -e "$commitfile" ]; then
+			touch "$commitfile"
+		fi
+		if ! [ -w "$commitfile" ]; then
+			printf "Impossible d'écrire sur ce fichier : Permission denied $commitfile\n"
+			exit 1
+		fi
+		
+		echo "commit : vérifié le " $(date '+%Y-%m-%d') " à " $(date '+%H:%M:%S') >> $commitfile
+		git add "$commitfile"
+
+		echo "Vérification mentionnée dans $commitfile"
+		exit 0;;
+	[Nn]* )
+		exit 0;;
+esac
+
+exit 0
